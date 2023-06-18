@@ -1,5 +1,7 @@
-# Copyright (c) HashiCorp, Inc.
-# SPDX-License-Identifier: MPL-2.0
+# Reference 
+# https://developer.hashicorp.com/terraform/tutorials/kubernetes/gke
+# https://registry.terraform.io/providers/hashicorp/google/latest/docs#example-usage
+# https://github.com/hashicorp/learn-terraform-provision-gke-cluster
 
 terraform {
   required_providers {

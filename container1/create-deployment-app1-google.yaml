@@ -1,15 +1,6 @@
-# apiVersion: storage.k8s.io/v1
-# kind: StorageClass
-# metadata:
-#   name: filestore-k8s
-# provisioner: filestore.csi.storage.gke.io
-# volumeBindingMode: Immediate
-# allowVolumeExpansion: true
-# parameters:
-#   tier: standard
-#   network: csci5409b00914208-vpc
-
----
+# References
+# https://cloud.google.com/build/docs/building/build-containers
+# https://cloud.google.com/build/docs/deploying-builds/deploy-gke
 
 apiVersion: v1
 kind: PersistentVolume
@@ -44,21 +35,7 @@ spec:
       storage: 1Gi
 
 ---
-# apiVersion: v1
-# kind: PersistentVolumeClaim
-# metadata:
-#   name: task-pv-claim
-#   labels:
-#     type: local
-# spec:
-#   storageClassName: filestore-k8s
-#   accessModes:
-#     - ReadWriteMany
-#   resources:
-#     requests:
-#       storage: 1Gi
 
----
 apiVersion: apps/v1 
 kind: Deployment
 metadata:
