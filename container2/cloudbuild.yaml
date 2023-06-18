@@ -1,0 +1,54 @@
+steps:
+
+# - name: 'gcr.io/cloud-builders/docker'
+#   args: ['pull', 'gcr.io/cloud-builders/git']
+#First Clone from Google Cloud Source Repository  
+- name: 'gcr.io/cloud-builders/git'
+  args: ['clone','https://source.developers.google.com/p/${_PROJECT}/r/${_REPO_NAME}', 'app2']
+
+#Build the image 
+- name: 'gcr.io/cloud-builders/docker'
+  args: ['build', '-t', '${_LOCATION}-docker.pkg.dev/$PROJECT_ID/${_REPOSITORY}/${_IMAGE}','.']
+  
+
+#Push the image  
+- name: 'gcr.io/cloud-builders/docker'
+  args: ['push','${_LOCATION}-docker.pkg.dev/$PROJECT_ID/${_REPOSITORY}/${_IMAGE}']
+  
+#Update the container image using kubectl set
+- name: 'gcr.io/cloud-builders/gke-deploy'
+  args:
+    - run
+    - --filename=${_DEPLOYMENT_FILE} # Path to your Kubernetes deployment configuration file
+    - --location=${_ZONE} # GKE cluster location
+    - --cluster=${_GKE_CLUSTER} # Name of your GKE cluster
+    - --namespace=default # Namespace where the deployment will be applied
+#   args:
+#   - 'set'
+#   - 'image'
+#   - 'deployment/${_DEPLOYMENTNAME}'
+#   - '${_CONTAINERNAME}=gcr.io/${_PROJECT}/${_CONTAINERNAME}:${_VERSION}'
+#   env:
+#   - 'CLOUDSDK_COMPUTE_ZONE=${_ZONE}'
+#   - 'CLOUDSDK_CONTAINER_CLUSTER=${_GKE_CLUSTER}'
+  
+substitutions:
+    #GCP Specific configuration. Please DON'T change anything
+    _PROJECT: csci5409b00914208
+    _ZONE: us-central1-c
+    _LOCATION: us-central1
+    _GKE_CLUSTER: k8s-assignment-cluster
+    _DEPLOYMENT_FILE: app2/create-deployment-app2-google.yaml
+    
+    #Repository Specific configuration. DevOps can change this settings
+    _DEPLOYMENTNAME: app2_deployment
+    _CONTAINERNAME: app2_container
+    _REPOSITORY: app2-repo
+    _REPO_NAME: app2
+    _IMAGE: app2-image
+    
+    # Developers ONLY change
+    _VERSION: v1.0
+    
+options:
+    substitution_option: 'ALLOW_LOOSE'

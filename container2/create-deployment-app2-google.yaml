@@ -1,0 +1,48 @@
+apiVersion: apps/v1 
+kind: Deployment
+metadata:
+  name: app2-deployment
+spec:
+  selector:
+    matchLabels:
+      app: app2
+  replicas: 1 # amount of pods must be > 1
+  template:
+    metadata:
+      labels:
+        app: app2
+    spec:
+      volumes:
+        - name: volume
+          persistentVolumeClaim:
+            claimName: task-pv-claim
+      containers:
+        - name: app2
+          image: us-central1-docker.pkg.dev/csci5409b00914208/app2-repo/app2-image:latest
+          imagePullPolicy: "Always"
+          ports:
+            - containerPort: 6001
+              name: "http-server"
+          volumeMounts:
+            - mountPath: "/Harjot_PV_dir"
+              name: volume
+
+---
+
+apiVersion: v1
+kind: Service
+metadata:
+  name: app2-deployment
+spec:
+  type: NodePort
+  selector:
+    app: app2
+  ports:
+      # By default and for convenience, the `targetPort` is set to the same value as the `port` field.
+    - port: 6001
+      targetPort: 6001
+
+      
+
+
+

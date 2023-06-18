@@ -1,0 +1,112 @@
+# apiVersion: storage.k8s.io/v1
+# kind: StorageClass
+# metadata:
+#   name: filestore-k8s
+# provisioner: filestore.csi.storage.gke.io
+# volumeBindingMode: Immediate
+# allowVolumeExpansion: true
+# parameters:
+#   tier: standard
+#   network: csci5409b00914208-vpc
+
+---
+
+apiVersion: v1
+kind: PersistentVolume
+metadata:
+  name: pv-name
+spec:
+  storageClassName: ""
+  capacity:
+    storage: 1Ti
+  accessModes:
+    - ReadWriteMany
+  persistentVolumeReclaimPolicy: Retain
+  volumeMode: Filesystem
+  csi:
+    driver: filestore.csi.storage.gke.io
+    volumeHandle: "modeInstance/us-central1-c/pvc-9898/vol1"
+    volumeAttributes:
+      ip: 10.143.126.138
+      volume: vol1
+---
+kind: PersistentVolumeClaim
+apiVersion: v1
+metadata:
+  name: task-pv-claim
+spec:
+  accessModes:
+    - ReadWriteMany
+  storageClassName: ""
+  volumeName: pv-name
+  resources:
+    requests:
+      storage: 1Gi
+
+---
+# apiVersion: v1
+# kind: PersistentVolumeClaim
+# metadata:
+#   name: task-pv-claim
+#   labels:
+#     type: local
+# spec:
+#   storageClassName: filestore-k8s
+#   accessModes:
+#     - ReadWriteMany
+#   resources:
+#     requests:
+#       storage: 1Gi
+
+---
+apiVersion: apps/v1 
+kind: Deployment
+metadata:
+  name: app1-deployment
+spec:
+  selector:
+    matchLabels:
+      app: app1
+  replicas: 1 # amount of pods must be > 1
+  template:
+    metadata:
+      labels:
+        app: app1
+    spec:
+      volumes:
+        - name: volume
+          persistentVolumeClaim:
+            claimName: task-pv-claim
+      containers:
+        - name: app1
+          image: us-central1-docker.pkg.dev/csci5409b00914208/app1-repo/app1-image:latest
+          imagePullPolicy: "Always"
+          ports:
+            - containerPort: 6000
+              name: "http-server"
+          volumeMounts:
+            - mountPath: "/Harjot_PV_dir"
+              name: volume
+
+---
+
+apiVersion: v1
+kind: Service
+metadata:
+  name: app1-deployment
+spec:
+  allocateLoadBalancerNodePorts: true
+  type: LoadBalancer
+  selector:
+    app: app1
+  ports:
+      # By default and for convenience, the `targetPort` is set to the same value as the `port` field.
+    - port: 6000
+      targetPort: 6000
+      # Optional field
+      # By default and for convenience, the Kubernetes control plane will allocate a port from a range (default: 30000-32767)
+      nodePort: 30007
+      
+
+
+
